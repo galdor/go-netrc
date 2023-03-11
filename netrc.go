@@ -20,6 +20,13 @@ type Entry struct {
 
 type Entries []Entry
 
+type Search struct {
+	Machine string
+	Port    int
+	Login   string
+	Account string
+}
+
 func DefaultPath() string {
 	if path := os.Getenv("NETRC"); path != "" {
 		return path
@@ -67,6 +74,18 @@ func (entries *Entries) Load(filePath string) error {
 	*entries = es
 
 	return nil
+}
+
+func (es Entries) Search(search Search) Entries {
+	var matches Entries
+
+	for _, e := range es {
+		if e.MatchSearch(search) {
+			matches = append(matches, e)
+		}
+	}
+
+	return matches
 }
 
 func (e *Entry) Load(line string) error {
@@ -157,4 +176,24 @@ func (e *Entry) Load(line string) error {
 	}
 
 	return nil
+}
+
+func (e Entry) MatchSearch(s Search) bool {
+	if s.Machine != "" && s.Machine != e.Machine {
+		return false
+	}
+
+	if s.Port != 0 && s.Port != e.Port {
+		return false
+	}
+
+	if s.Login != "" && s.Login != e.Login {
+		return false
+	}
+
+	if s.Account != "" && s.Account != e.Account {
+		return false
+	}
+
+	return true
 }
